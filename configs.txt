@@ -1,0 +1,3 @@
+CurrentSavename=Najd
+eu4Saves=C:\Users\Mack\Documents\Paradox Interactive\Europa Universalis IV\save games
+exportedSaves=C:\Users\Mack\Documents\EU4 Games
