@@ -27,9 +27,9 @@ Saves all saves as a tree ideally with time and other info + notes
 */
 
 //GLOBAL VARIABLES
-var SaveName string
-var SaveLocation string
-var ExportedSavesLocation string
+var SaveName string              //exact name of gamesave (No _backups and no .eu4 ending)
+var SaveLocation string          //savegame folder for EU4, usually $User/Docs/Paradox Interactive/Europa Universalis IV/save games
+var ExportedSavesLocation string //storage folder for backup eu4 gamesaves
 var CurrentSaveLoc string
 
 func init() {
