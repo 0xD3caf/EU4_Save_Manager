@@ -30,6 +30,7 @@ Saves all saves as a tree ideally with time and other info + notes
 var SaveName string
 var SaveLocation string
 var ExportedSavesLocation string
+var CurrentSaveLoc string
 
 func init() {
 	//set globals from configs file
@@ -39,6 +40,7 @@ func init() {
 	SaveName = strings.Split(LineList[0], "=")[1]
 	SaveLocation = strings.Split(LineList[1], "=")[1]
 	ExportedSavesLocation = strings.Split(LineList[2], "=")[1]
+	CurrentSaveLoc = ExportedSavesLocation + "\\" + SaveName
 	/* //VAR CHECK
 	fmt.Println("Save Name:", SaveName)
 	fmt.Println("Save Location:", SaveLocation)
@@ -47,8 +49,18 @@ func init() {
 }
 
 func main() {
+	var userInput string
 	fmt.Println("EU4 SAVE SCUMMER")
-	ExportSaves()
+	fmt.Println("Please enter a command (backup / reload): ")
+	fmt.Scan(&userInput)
+	if strings.ToLower(userInput) == "backup" {
+		ExportSaves()
+	} else if strings.ToLower(userInput) == "reload" {
+		ImportSaves()
+	} else {
+		fmt.Println("Unknown command, please try again")
+		os.Exit(1)
+	}
 }
 
 func ExportSaves() bool {
@@ -62,24 +74,58 @@ func ExportSaves() bool {
 	}
 	for _, line := range DirList {
 		if strings.Contains(line.Name(), SaveName) {
-			fmt.Println(line.Name())
-			oldSaveLoc := SaveLocation + "\\" + SaveName + "\\" + line.Name()
+			oldSaveLoc := SaveLocation + "\\" + line.Name()
 			newSaveLoc := ExportedSavesLocation + "\\" + SaveName + "\\" + line.Name()
+			copy(oldSaveLoc, newSaveLoc)
+			/* //VAR CHECK
 			fmt.Println(oldSaveLoc)
 			fmt.Println(newSaveLoc)
-			copy(oldSaveLoc, newSaveLoc)
+			*/
 		}
 	}
 	return true
 }
 
-func ImportSaves() {
+func ImportSaves() bool {
 	//Takes saves selected by user and places them back in eu4 gamesave folder + check for saves that are newer, i.e they take form SAVENAME_backup(1)...backup(N).* where N is the number of backups in import sets latest save
-	return
+	//read save location
+	saveLoc, err := os.ReadDir(SaveLocation)
+	if !CheckErr(err) {
+		return false
+	}
+	for _, line := range saveLoc {
+		if strings.Contains(line.Name(), SaveName) {
+			err := os.Remove(SaveLocation + "\\" + SaveName + "\\" + line.Name())
+			if err != nil {
+				fmt.Println("File was not found")
+				break
+			}
+		}
+	}
+	currList, err := os.ReadDir(CurrentSaveLoc)
+	if !CheckErr(err) {
+		return false
+	}
+	for _, line := range currList {
+		oldSaveLoc := ExportedSavesLocation + "\\" + SaveName + "\\" + line.Name()
+		newSaveLoc := SaveLocation + "\\" + line.Name()
+		//fmt.Println("Moving from:", oldSaveLoc)
+		//fmt.Println("Moving to:", newSaveLoc)
+		_, err := copy(oldSaveLoc, newSaveLoc)
+		if !CheckErr(err) {
+			fmt.Println("File was not found")
+			break
+		}
+	}
+	//remove all save files of current game name
+	//copy in replacement files
+	//alert user we are done
+	return true
 }
 
 func ModelSaves() {
-	//takes all current saves within export tree and draws a diagram/tree of saves
+	//Graphically models the games save data
+
 }
 
 func CheckErr(Error error) bool {
@@ -136,4 +182,13 @@ func LineReader(filename string) []string {
 		log.Fatal(err)
 	}
 	return LineList
+}
+
+func checkBackupCount() {
+	return
+}
+
+func setActiveFolder() {
+	//loops through directories to find current save location and sets global var to that value
+	return
 }
